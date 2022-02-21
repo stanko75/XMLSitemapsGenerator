@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 
 namespace XMLSitemapsGenerator
@@ -8,6 +9,9 @@ namespace XMLSitemapsGenerator
     [XmlRoot("urlset")]
     public class Urlset
     {
+      [XmlAttribute("schemaLocation", Namespace = XmlSchema.InstanceNamespace)]
+      public string SchemaLocation { get; set; }
+
       [XmlElement(ElementName = "url")] public List<Url> Url { get; set; }
     }
 

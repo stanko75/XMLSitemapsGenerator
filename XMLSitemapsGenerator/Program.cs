@@ -17,10 +17,10 @@ namespace XMLSitemapsGenerator
       //add urls
       AddUrls(domain, domain, urls);
 
-      urls.Add(new XmlSiteMapModel.Url
-      {
-        Changefreq = "monthly", Lastmod = "2005-01-01", Loc = "uriLink.AbsoluteUri", Priority = "0.8"
-      });
+      //urls.Add(new XmlSiteMapModel.Url
+      //{
+      //  Changefreq = "monthly", Lastmod = "2005-01-01", Loc = "uriLink.AbsoluteUri", Priority = "0.8"
+      //});
 
       //save to XML
       SaveToXml(urls);
@@ -28,29 +28,37 @@ namespace XMLSitemapsGenerator
 
     private static void AddUrls(Uri uri, Uri domain, List<XmlSiteMapModel.Url> urls)
     {
-      HtmlWeb hw = new HtmlWeb();
-      HtmlDocument doc = hw.Load(uri);
-      HtmlNodeCollection htmlNodeCollection = doc.DocumentNode.SelectNodes("//a[@href]");
-      if (htmlNodeCollection is not null)
+      try
       {
-        foreach (HtmlNode link in htmlNodeCollection)
+        HtmlWeb hw = new HtmlWeb();
+        HtmlDocument doc = hw.Load(uri);
+        HtmlNodeCollection htmlNodeCollection = doc.DocumentNode.SelectNodes("//a[@href]");
+        if (htmlNodeCollection is not null)
         {
-          string href = link.Attributes["href"].Value;
-          Uri uriLink = GetAbsoluteUrlString(domain, href);
-
-          if (uriLink.AbsoluteUri.Contains(domain.AbsoluteUri))
+          foreach (HtmlNode link in htmlNodeCollection)
           {
-            if (urls.All(url => url.Loc != uriLink.AbsoluteUri))
+            string href = link.Attributes["href"].Value;
+            Uri uriLink = GetAbsoluteUrlString(domain, href);
+
+            if (uriLink.AbsoluteUri.Contains(domain.AbsoluteUri))
             {
-              urls.Add(new XmlSiteMapModel.Url
+              if (urls.All(url => url.Loc != uriLink.AbsoluteUri))
               {
-                Changefreq = "monthly", Lastmod = DateTime.Now.ToString("yyyy-MM-dd"), Loc = uriLink.AbsoluteUri, Priority = "0.8"
-              });
-              Console.WriteLine(uriLink.AbsoluteUri);
-              AddUrls(uriLink, domain, urls);
+                urls.Add(new XmlSiteMapModel.Url
+                {
+                  Changefreq = "monthly", Lastmod = DateTime.Now.ToString("yyyy-MM-dd"), Loc = uriLink.AbsoluteUri,
+                  Priority = "0.8"
+                });
+                Console.WriteLine(uriLink.AbsoluteUri);
+                AddUrls(uriLink, domain, urls);
+              }
             }
           }
         }
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine($"Error: {e.Message}");
       }
     }
 
@@ -67,6 +75,7 @@ namespace XMLSitemapsGenerator
       XmlSiteMapModel.Urlset serializedProject = new XmlSiteMapModel.Urlset
       {
         Url = urls
+        , SchemaLocation = "http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
       };
 
       TextWriter txtWriter = new StreamWriter(Path.ChangeExtension(typeof(Program).Assembly.Location, ".xml"));
@@ -74,7 +83,6 @@ namespace XMLSitemapsGenerator
       XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
       ns.Add("xsi", "http://www.w3.org/2001/XMLSchema-instance");
       ns.Add("xhtml", "http://www.w3.org/1999/xhtml");
-      ns.Add("schemaLocation", "http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd");
       ns.Add(string.Empty, "http://www.sitemaps.org/schemas/sitemap/0.9");
 
       XmlSerializer xmlSerializer = new XmlSerializer(typeof(XmlSiteMapModel.Urlset), "http://www.sitemaps.org/schemas/sitemap/0.9");
