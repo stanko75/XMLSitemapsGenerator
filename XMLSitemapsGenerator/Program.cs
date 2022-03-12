@@ -12,7 +12,7 @@ namespace XMLSitemapsGenerator
   {
     static void Main(string[] args)
     {
-      Uri domain = new UriBuilder("milosev.com").Uri;
+      Uri domain = new UriBuilder("www.milosev.com").Uri;
       List<XmlSiteMapModel.Url> urls = new List<XmlSiteMapModel.Url>();
       //add urls
       AddUrls(domain, domain, urls);
